@@ -1,0 +1,133 @@
+To update or alter a specific field within a JSON column in MySQL, such as the Flavours field, you can use the JSON_SET() function or the JSON_REPLACE() function, depending on your needs.
+
+Here’s how you can do it:
+
+1. Using JSON_SET() to Insert or Update a Field:
+The JSON_SET() function is used to insert or update a field in a JSON object. If the field already exists, it will update the value; if it doesn't exist, it will insert it.
+
+sql
+
+        UPDATE product_data
+        SET Product_Info = JSON_SET(Product_Info, '$.Flavours', 'New Flavour')
+        WHERE Product_Name = 'Kaaju Katli';
+        In this query:
+
+        $.Flavours specifies the path to the Flavours field in the JSON object.
+'New Flavour' is the new value you want to set for the Flavours field.
+WHERE Product_Name = 'Kaaju Katli' ensures that only the row with the product name "Kaaju Katli" is updated.
+2. Using JSON_REPLACE() to Update a Field (Only if it Exists):
+If you want to update a field only if it already exists, you can use JSON_REPLACE():
+
+sql
+
+        UPDATE product_data
+        SET Product_Info = JSON_REPLACE(Product_Info, '$.Flavours', 'Updated Flavour')
+        WHERE Product_Name = 'Kaaju Katli';
+        In this query:
+
+        $.Flavours specifies the path to the Flavours field.
+'Updated Flavour' is the new value you want to set.
+WHERE Product_Name = 'Kaaju Katli' ensures that only the row with the product name "Kaaju Katli" is updated.
+3. Working with Arrays or Nested JSON Objects:
+If the Flavours field is an array or nested inside another JSON object, you can modify it accordingly. For example:
+
+To set the second element in an array:
+
+sql
+
+        UPDATE product_data
+        SET Product_Info = JSON_SET(Product_Info, '$.Flavours[1]', 'New Second Flavour')
+        WHERE Product_Name = 'Kaaju Katli';
+        To update a nested field:
+
+        sql
+
+        UPDATE product_data
+        SET Product_Info = JSON_SET(Product_Info, '$.Description.Ingredients', 'New Ingredients')
+        WHERE Product_Name = 'Kaaju Katli';
+        4. Appending to an Array in JSON:
+        If Flavours is an array and you want to append a new value to it, you can use JSON_ARRAY_APPEND():
+
+sql
+
+        UPDATE product_data
+        SET Product_Info = JSON_ARRAY_APPEND(Product_Info, '$.Flavours', 'New Flavour')
+        WHERE Product_Name = 'Kaaju Katli';
+        This will append 'New Flavour' to the existing array in the Flavours field.
+
+5. Deleting a Field:
+If you want to remove a field from the JSON object, you can use the JSON_REMOVE() function:
+
+sql
+
+        UPDATE product_data
+        SET Product_Info = JSON_REMOVE(Product_Info, '$.Flavours')
+        WHERE Product_Name = 'Kaaju Katli';
+        
+        This will delete the Flavours field from the JSON object.
+
+Summary:
+JSON_SET(): Insert or update a field.
+JSON_REPLACE(): Update a field only if it exists.
+JSON_REMOVE(): Delete a field.
+JSON_ARRAY_APPEND(): Append to an array.
+These functions allow you to manipulate JSON data stored in your MySQL table.
+
+
+
+
+INSERT INTO menu_items (product_name, product_info)
+VALUES 
+(
+    'Kambu Pori',
+    '{
+        "SKU_ID": "",
+        "HSN_Code": "210690",
+        "Category": "Sweets",
+        "Product_Name":"Kambu Pori",
+        "Description": {
+			"Description": "Quinoa is a great source of fiber. Fiber can prevent or treat constipation and may lower your risk of intestinal cancers. It also helps you feel full longer, so it may help with weight loss. The fiber in quinoa can also help with cholesterol and blood sugar levels, lowering your risk of diabetes and heart disease. Quinoa is rich in antioxidants, which can prevent damage to your heart and other organs.",
+            "Ingredients": "Quinoa Flakes, Rice Flakes, Grams, Peanut & Salt",
+            "Shelf_Life": "3 Months From MFD",
+            "Direction_of_Usage": "Once opened Store In an airtight container and Do Not keep on Refrigerated .Keep away from Direct sunlight",
+            "Logo": " vegan,  No Preservative & No synthetic food Colours, No Essense and no Artificial flavours"
+        },
+        "Flavours": "",
+        "UOM": ["100 G","250 G"],
+        "MRP": [47,118],
+        "Selling_Price": [47,118], 
+        "Shelf_Life": "3 Months",
+        "Packing" :""
+    }'
+);
+
+
+
+
+AISENSYS NEED
+    message after placing order about order details
+    message after order management(Shipping status).
+    
+
+
+// exports.createOrder = async (req, res) => {
+//   try {
+
+//     const { orderId,name, mobile, orderItems, totalPrice,orderStatus } = req.body;
+//     const sql =
+//       "INSERT INTO customer_orders (order_id, name, mobile, order_items, total_price, order_status) VALUES (?,?,?,?,?,?)";
+//     const result = await new Promise((resolve, reject) => {
+//       db.query(sql, [orderId, name, mobile, orderItems, totalPrice,orderStatus], (err, result) => {
+//         if (err) {
+//           return reject(err);
+//         }
+//         resolve(result);
+//       });
+//     });
+//     return res
+//       .status(201)
+//       .json({ status: true, message: "Order placed successfully" });
+//   } catch (error) {
+//     res.status(500).json({ status: false, message: "Error placing order" });
+//   }
+// };
