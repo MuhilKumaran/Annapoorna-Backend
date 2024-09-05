@@ -9,6 +9,7 @@ router
     .route("/updateMenu")
     .put(adminController.updateMenu);
 router
+
   .route("/manageOrder")
   .patch(adminController.manageOrder)
   .get(adminController.getOrdersByDeliveryStatus);

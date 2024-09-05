@@ -36,6 +36,7 @@ exports.loginAdmin = async (req, res) => {
 
     // Promise-based query execution
     const sql = "SELECT email,password FROM admins WHERE email = ?";
+    
     const result = await new Promise((resolve, reject) => {
       db.query(sql, [email], (err, result) => {
         if (err) {
@@ -51,7 +52,8 @@ exports.loginAdmin = async (req, res) => {
         .json({ status: "fail", message: "User not found" });
     }
     const adminData = result[0];
-    const match = await bcrypt.compare(password, adminData.password);
+    // const match = await bcrypt.compare(password, adminData.password);
+    const match = password === adminData.password;
     if (!match) {
       return res
         .status(400)
@@ -118,7 +120,7 @@ const sendDeliveryStatus = async (userData) => {
 
   const data = {
     apiKey: process.env.AISENSY_KEY,
-    campaignName: "Order_Details",
+    campaignName: "Delivery_Status",
     destination: mobile, // Recipient's phone number
     userName: name, // Your username or identifier
     templateParams: [name, orderId, orderItems, totalAmount, deliveryStatus], // Array of template parameters
@@ -167,7 +169,8 @@ exports.manageOrder = async (req, res) => {
       });
     });
     if (result.affectedRows > 0) {
-      const SQL = "SELECT * from customer_orders  where order_id =?";
+      const SQL = "SELECT * from customer_orders where order_id =?";
+   
       const result = await new Promise((resolve, reject) => {
         db.query(SQL, [order_id], (err, result) => {
           if (err) {

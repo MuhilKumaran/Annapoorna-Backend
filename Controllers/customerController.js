@@ -11,8 +11,8 @@ const Razorpay = require("razorpay");
 const twilio = require("twilio");
 const client = twilio(process.env.TWILIO_SID, process.env.TWILIO_KEY);
 const razorpay = new Razorpay({
-  key_id: "YOUR_RAZORPAY_KEY_ID",
-  key_secret: "YOUR_RAZORPAY_SECRET",
+  key_id: process.env.RAZORPAY_KEY_ID,
+  key_secret: process.env.RAZORPAY_KEY_SECRET,
 });
 
 exports.signupCustomer = async (req, res) => {
@@ -230,7 +230,12 @@ exports.createOrder = async (req, res) => {
   };
   try {
     const order = await razorpay.orders.create(options);
-    // Store the order in your database with 'pending' status
+   
+    if (!order)
+      return res
+        .status(500)
+        .json({ status: false, message: "Error in Creating Payment" });
+
     const currentDate = new Date(Date.now())
       .toISOString()
       .slice(0, 19)
@@ -267,10 +272,10 @@ exports.verifyOrder = async (req, res) => {
   const { orderId, paymentId, razorpayOrderId, razorpaySignature } = req.body;
   const user = req.user;
   const generatedSignature = crypto
-    .createHmac("sha256", "YOUR_RAZORPAY_SECRET")
+    .createHmac("sha256", process.env.RAZORPAY_KEY_SECRET)
     .update(`${razorpayOrderId}|${paymentId}`)
     .digest("hex");
-
+    
   if (generatedSignature === razorpaySignature) {
     try {
       const updateSQL =
@@ -288,7 +293,7 @@ exports.verifyOrder = async (req, res) => {
       res.status(500).json({ status: false, error: "Database update failed" });
     }
   } else {
-    res.status(400).json({ status: false, error: "Invalid signature" });
+    res.status(400).json({ status: false, error: "Invalid Payment signature" });
   }
 };
 

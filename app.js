@@ -21,6 +21,7 @@ const razorpay = new Razorpay({
 });
 
 app.use("/menus", menuRoutes);
+
 app.use("/customers", customerRoutes);
 app.use("/admin", adminRoutes);
 
@@ -80,3 +81,7 @@ app.use("/admin", adminRoutes);
 
 
 module.exports = app;
+
+localhost:8000/customer/
+
+localhost:8000/admin
