@@ -225,7 +225,7 @@ const sendWhatsAppOrderData = async (userData) => {
 };
 
 exports.createOrder = async (req, res) => {
-  const { name, mobile, orderItems, totalPrice } = req.body;
+  const { name, mobile,address,orderItems, totalPrice } = req.body;
 
   const options = {
     amount: totalPrice * 100, // Razorpay expects amount in paise
@@ -245,7 +245,7 @@ exports.createOrder = async (req, res) => {
       .replace("T", " ");
     const sql = `
   INSERT INTO customer_orders 
-  (transaction_id, name, mobile, order_items, total_price, created_at, payment_status, delivery_status) 
+  (transaction_id, name, mobile,address, order_items, total_price, created_at, payment_status, delivery_status) 
   VALUES (?, ?, ?, ?, ?, ?, ?, ?)`;
 
     const result = await new Promise((resolve, reject) => {
@@ -255,6 +255,7 @@ exports.createOrder = async (req, res) => {
           order.id,
           name,
           mobile,
+          address,
           JSON.stringify(orderItems), // Convert orderItems to JSON string
           totalPrice,
           currentDate,
