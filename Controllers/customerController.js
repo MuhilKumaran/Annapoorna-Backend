@@ -43,10 +43,11 @@ exports.signupCustomer = async (req, res) => {
 };
 
 exports.sendOTP = async (req, res) => {
+
   const { mobileNumber } = req.body;
   const otp = Math.floor(100000 + Math.random() * 900000).toString(); // 6-digit OTP
 
-  // Format expiresAt as 'YYYY-MM-DD HH:MM:SS'
+
   const expiresAt = new Date(Date.now() + 5 * 60 * 1000)
     .toISOString()
     .slice(0, 19)
@@ -80,6 +81,8 @@ exports.sendOTP = async (req, res) => {
 };
 
 exports.verifyOtp = async (req, res) => {
+  console.log("hii");
+  console.log(req.body);
   const { mobileNumber, otp } = req.body;
 
   try {
@@ -88,6 +91,7 @@ exports.verifyOtp = async (req, res) => {
           customers.mobile, 
           customers.email, 
           customers.password, 
+          customers.role,
           login_otp.otp, 
           login_otp.expiresAt
       FROM 
@@ -113,7 +117,7 @@ exports.verifyOtp = async (req, res) => {
     }
 
     const userRecord = result[0];
-
+    console.log(userRecord);
     const currentDate = new Date(Date.now())
       .toISOString()
       .slice(0, 19)
@@ -225,12 +229,11 @@ exports.createOrder = async (req, res) => {
 
   const options = {
     amount: totalPrice * 100, // Razorpay expects amount in paise
-    currency: currency,
+    currency: "INR",
     receipt: `receipt_${Date.now()}`, // Unique receipt ID
   };
   try {
     const order = await razorpay.orders.create(options);
-   
     if (!order)
       return res
         .status(500)
@@ -240,8 +243,11 @@ exports.createOrder = async (req, res) => {
       .toISOString()
       .slice(0, 19)
       .replace("T", " ");
-    const sql =
-      "INSERT INTO customer_orders (order_id, name, mobile, order_items, total_price, created_at,payment_status) VALUES (?,?,?,?,?,?,?)";
+    const sql = `
+  INSERT INTO customer_orders 
+  (transaction_id, name, mobile, order_items, total_price, created_at, payment_status, delivery_status) 
+  VALUES (?, ?, ?, ?, ?, ?, ?, ?)`;
+
     const result = await new Promise((resolve, reject) => {
       db.query(
         sql,
@@ -249,11 +255,12 @@ exports.createOrder = async (req, res) => {
           order.id,
           name,
           mobile,
-          orderItems,
+          JSON.stringify(orderItems), // Convert orderItems to JSON string
           totalPrice,
           currentDate,
           "pending",
-        ], //orderId from razorpay
+          "processing", // Make sure this value matches the expected data type
+        ],
         (err, result) => {
           if (err) {
             return reject(err);
@@ -264,31 +271,72 @@ exports.createOrder = async (req, res) => {
     });
     return res.status(201).json(order);
   } catch (error) {
+    console.log(error);
     res.status(500).json({ status: false, message: "Error placing order" });
   }
 };
 
+const renderTemplate = (view, data) => {
+  return new Promise((resolve, reject) => {
+    app.render(view, data, (err, html) => {
+      if (err) return reject(err);
+      resolve(html);
+    });
+  });
+};
+
 exports.verifyOrder = async (req, res) => {
   const { orderId, paymentId, razorpayOrderId, razorpaySignature } = req.body;
-  const user = req.user;
+  // const user = req.user;
+  //   SEND ADDRESS AND OTHER DATA FROM HANDLER
+  const user = {
+    userName: "muhil",
+    email: "muhil@gmail.com",
+    mobile: "9342407556",
+    role: "customer",
+    iat: 1725529136,
+    exp: 1725532736,
+  };
   const generatedSignature = crypto
     .createHmac("sha256", process.env.RAZORPAY_KEY_SECRET)
     .update(`${razorpayOrderId}|${paymentId}`)
     .digest("hex");
-    
+
   if (generatedSignature === razorpaySignature) {
     try {
-      const updateSQL =
-        "UPDATE customer_orders SET payment_status = ? where order_id =?";
-      const updateResult = await new Promise((resolve, reject) => {
-        db.query(updateSQL, ["paid", orderId], (err, result) => {
-          if (err) {
-            return reject(err);
-          }
-          resolve(result);
-        });
-      });
-      res.json({ status: true, message: "Payment Successfull" });
+      // const updateSQL =
+      //   "UPDATE customer_orders SET payment_status = ? where transaction_id =?";
+      // const updateResult = await new Promise((resolve, reject) => {
+      //   db.query(updateSQL, ["paid", orderId], (err, result) => {
+      //     if (err) {
+      //       return reject(err);
+      //     }
+      //     resolve(result);
+      //   });
+      // });
+      // res.json({ status: true, message: "Payment Successfull" });
+      const orderDetails = {
+        orderId: orderId,
+        orderDate: new Date().toLocaleString(), // Set the order date
+        paymentMethod: "Online",
+        customerName: user.userName,
+        customerAddress: "Your Address Here", // Replace with actual customer address
+        customerMobile: user.mobile,
+        customerEmail: user.email,
+        orderItems: orderItems,
+        itemTotal: 507.0, // Replace with actual item total
+        deliveryCharge: 100.0, // Replace with actual delivery charge
+        totalAmount: 607.0, // Replace with actual total amount
+      };
+
+      // Make a request to generate the PDF and send the email
+      await axios.post(
+        "http://localhost:8000/generate-pdf-and-send",
+        orderDetails
+      );
+
+      // Send a success response to the client
+      res.json({ status: true, message: "Payment Successful and email sent" });
     } catch (error) {
       res.status(500).json({ status: false, error: "Database update failed" });
     }
@@ -313,7 +361,7 @@ exports.webhook = async (req, res) => {
       const orderId = paymentEntity.order_id;
       try {
         const updateSQL =
-          "UPDATE customer_orders SET payment_status = ? where order_id =?";
+          "UPDATE customer_orders SET payment_status = ? where transaction_id =?";
         const updateResult = await new Promise((resolve, reject) => {
           db.query(updateSQL, ["paid", orderId], (err, result) => {
             if (err) {
@@ -324,7 +372,7 @@ exports.webhook = async (req, res) => {
         });
 
         if (updateResult.affectedRows > 0) {
-          const SQL = "SELECT * from customer_orders  where order_id =?";
+          const SQL = "SELECT * from customer_orders  where transaction_id =?";
           const result = await new Promise((resolve, reject) => {
             db.query(SQL, [orderId], (err, result) => {
               if (err) {
@@ -357,7 +405,7 @@ exports.webhook = async (req, res) => {
 exports.getOrders = async (req, res) => {
   try {
     const { mobile } = req.user;
-    const sql = "SELECT * FROM customer_orders WHERE mobile = ?";
+    const sql = "SELECT * FROM customer_orders WHERE mobile = ? LIMIT 4";
     const result = await new Promise((resolve, reject) => {
       db.query(sql, [mobile], (err, result) => {
         if (err) {

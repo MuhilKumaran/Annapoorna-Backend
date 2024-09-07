@@ -4,8 +4,7 @@ const jwt = require("jsonwebtoken");
 require("dotenv").config();
 const SECRET_KEY = process.env.SECRET_KEY;
 
-
-const authenticateAdmin = (req, res, next) => {
+exports.authenticateAdmin = (req, res, next) => {
   const token = req.cookies.token;
 
   if (!token) {
@@ -17,15 +16,13 @@ const authenticateAdmin = (req, res, next) => {
       return res.status(403).json({ message: "Invalid token" });
     }
     req.user = user; // Attach user data to the request object
-    if(user.role!=="admin")
+    
+    if (user.role !== "admin")
       return res.status(403).json({ message: "Access denied. Admins only." });
     next();
   });
 };
-
-
-
-const authenticateCustomer = (req, res, next) => {
+exports.authenticateCustomer = (req, res, next) => {
   const token = req.cookies.token;
   if (!token) {
     return res.status(401).json({ message: "Login to view the order" });
@@ -36,11 +33,9 @@ const authenticateCustomer = (req, res, next) => {
       return res.status(403).json({ message: "Invalid token" });
     }
     req.user = user; // Attach user data to the request object
-
-    if(user.role!=="customer")
-        return res.status(403).json({ message: "Access denied. Admins only." });
+    console.log(user);
+    if (user.role !== "customer")
+      return res.status(403).json({ message: "Access denied. customer only." });
     next();
   });
 };
-
-module.exports = authenticateToken;
