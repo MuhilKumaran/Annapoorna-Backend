@@ -9,7 +9,10 @@ const menuRoutes = require("./Routes/menuRoutes");
 const db = require("./Modules/mysql");
 const adminRoutes = require("./Routes/adminRoutes");
 const path = require("path");
-app.use(cors());
+app.use(cors({
+  origin: ['http://localhost:5173','http://localhost:3000'] // or your production frontend URL
+  credentials: true
+}));
 app.use(express.json());
 app.use(cookieParser());
 app.use(bodyParser.json());
