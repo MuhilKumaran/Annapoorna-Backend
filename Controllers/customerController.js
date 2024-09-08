@@ -43,7 +43,7 @@ exports.signupCustomer = async (req, res) => {
 };
 
 exports.sendOTP = async (req, res) => {
-
+  console.log(req.body);
   const { mobileNumber } = req.body;
   const otp = Math.floor(100000 + Math.random() * 900000).toString(); // 6-digit OTP
 
@@ -190,6 +190,7 @@ exports.logoutCustomer = (req, res) => {
 };
 
 const sendWhatsAppOrderData = async (userData) => {
+  console.log(userData);
   const { mobile, name, orderId, items, totalAmount, orderStatus } = userData;
 
   const orderItems = items.map(
@@ -225,6 +226,7 @@ const sendWhatsAppOrderData = async (userData) => {
 };
 
 exports.createOrder = async (req, res) => {
+  console.log(req.body);
   const { name, mobile,address,orderItems, totalPrice } = req.body;
 
   const options = {
