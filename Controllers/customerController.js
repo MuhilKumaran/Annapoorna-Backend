@@ -80,6 +80,105 @@ exports.sendOTP = async (req, res) => {
   }
 };
 
+// exports.verifyOtp = async (req, res) => {
+//   console.log("hii");
+//   console.log(req.body);
+//   const { mobileNumber, otp } = req.body;
+
+//   try {
+//     const sql = `SELECT 
+//           customers.name, 
+//           customers.mobile, 
+//           customers.email, 
+//           customers.password, 
+//           customers.role,
+//           login_otp.otp, 
+//           login_otp.expiresAt
+//       FROM 
+//           customers
+//       JOIN 
+//           login_otp 
+//       ON 
+//           customers.mobile = login_otp.mobile
+//       WHERE 
+//           login_otp.mobile = ?`;
+
+//     const result = await new Promise((resolve, reject) => {
+//       db.query(sql, [mobileNumber], (err, result) => {
+//         if (err) {
+//           return reject(err);
+//         }
+//         resolve(result);
+//       });
+//     });
+
+//     if (result.length === 0) {
+//       return res.status(404).json({ status: false, message: "OTP not found" });
+//     }
+
+//     const userRecord = result[0];
+//     console.log(userRecord);
+//     const currentDate = new Date(Date.now())
+//       .toISOString()
+//       .slice(0, 19)
+//       .replace("T", " ");
+
+//     if (new Date(userRecord.expiresAt) < currentDate) {
+//       return res.status(400).json({ status: false, message: "OTP expired" });
+//     }
+
+//     if (userRecord.otp !== otp) {
+//       return res.status(400).json({ status: false, message: "Invalid OTP" });
+//     }
+
+//     const token = jwt.sign(
+//       {
+//         userName: userRecord.name,
+//         email: userRecord.email,
+//         mobile: userRecord.mobile,
+//         role: userRecord.role,
+//       },
+//       SECRET_KEY,
+//       {
+//         expiresIn: "1h",
+//       }
+//     );
+
+//     res.cookie(
+//       "token",
+//       token,
+//       {
+//         userName: userRecord.name,
+//         email: userRecord.email,
+//         mobile: userRecord.mobile,
+//         role: userRecord.role,
+//       },
+//       {
+//         httpOnly: true,
+//         secure: true, // Set to true if using HTTPS on backend
+//         sameSite: "None",
+//       }
+//     );
+
+//     const deleteSQL = `DELETE FROM login_otp WHERE mobile = ?`;
+//     const deleteResult = await new Promise((resolve, reject) => {
+//       db.query(deleteSQL, [mobileNumber], (err, result) => {
+//         if (err) {
+//           return reject(err);
+//         }
+//         resolve(result);
+//       });
+//     });
+
+//     return res.status(200).json({ status: true, message: "Login Successful" });
+//   } catch (error) {
+//     console.log(error);
+//     return res
+//       .status(500)
+//       .json({ status: false, message: "Error validating OTP" });
+//   }
+// };
+
 exports.verifyOtp = async (req, res) => {
   console.log("hii");
   console.log(req.body);
@@ -144,22 +243,20 @@ exports.verifyOtp = async (req, res) => {
       }
     );
 
-    res.cookie(
-      "token",
+    // Send token to the frontend instead of setting it in a cookie
+    return res.status(200).json({ 
+      status: true, 
+      message: "Login Successful", 
       token,
-      {
+      user: {
         userName: userRecord.name,
         email: userRecord.email,
         mobile: userRecord.mobile,
-        role: userRecord.role,
-      },
-      {
-        httpOnly: true,
-        secure: true, // Set to true if using HTTPS on backend
-        sameSite: "None",
+        role: userRecord.role
       }
-    );
+    });
 
+    // Clean up OTP after successful login
     const deleteSQL = `DELETE FROM login_otp WHERE mobile = ?`;
     const deleteResult = await new Promise((resolve, reject) => {
       db.query(deleteSQL, [mobileNumber], (err, result) => {
@@ -170,14 +267,12 @@ exports.verifyOtp = async (req, res) => {
       });
     });
 
-    return res.status(200).json({ status: true, message: "Login Successful" });
   } catch (error) {
     console.log(error);
-    return res
-      .status(500)
-      .json({ status: false, message: "Error validating OTP" });
+    return res.status(500).json({ status: false, message: "Error validating OTP" });
   }
 };
+
 
 exports.logoutCustomer = (req, res) => {
   res.clearCookie("token", {
