@@ -347,7 +347,7 @@ exports.createOrder = async (req, res) => {
     const sql = `
   INSERT INTO customer_orders 
   (transaction_id, name, mobile,address, order_items, total_price, created_at, payment_status, delivery_status) 
-  VALUES (?, ?, ?, ?, ?, ?, ?, ?)`;
+  VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`;
 
     const result = await new Promise((resolve, reject) => {
       db.query(
