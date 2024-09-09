@@ -10,7 +10,7 @@ const db = require("./Modules/mysql");
 const adminRoutes = require("./Routes/adminRoutes");
 const path = require("path");
 app.use(cors({
-  origin: ['http://localhost:5173','http://localhost:3000'], // or your production frontend URL
+  origin: ['http://localhost:5173','http://localhost:3000','https://annapoorna-mithais.onrender.com'], // or your production frontend URL
   credentials: true
 }));
 app.use(express.json());
