@@ -155,7 +155,8 @@ exports.verifyOtp = async (req, res) => {
       },
       {
         httpOnly: true,
-        secure: false, // Set to true if using HTTPS
+        secure: true, // Set to true if using HTTPS on backend
+        sameSite: "None",
       }
     );
 
