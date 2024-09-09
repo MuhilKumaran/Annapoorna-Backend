@@ -226,7 +226,10 @@ const sendWhatsAppOrderData = async (userData) => {
 };
 
 exports.createOrder = async (req, res) => {
+  console.log("body in create order Route");
   console.log(req.body);
+  console.log("user in create order Route");
+  console.log(req.user);
   const { name, mobile,address,orderItems, totalPrice } = req.body;
 
   const options = {
@@ -290,16 +293,19 @@ const renderTemplate = (view, data) => {
 
 exports.verifyOrder = async (req, res) => {
   const { orderId, paymentId, razorpayOrderId, razorpaySignature } = req.body;
-  // const user = req.user;
+  console.log("body in verify order route");
+  console.log(req.body);
+  console.log("user in verify route");
+  const user = req.user;
   //   SEND ADDRESS AND OTHER DATA FROM HANDLER
-  const user = {
-    userName: "muhil",
-    email: "muhil@gmail.com",
-    mobile: "9342407556",
-    role: "customer",
-    iat: 1725529136,
-    exp: 1725532736,
-  };
+  // const user = {
+  //   userName: "muhil",
+  //   email: "muhil@gmail.com",
+  //   mobile: "9342407556",
+  //   role: "customer",
+  //   iat: 1725529136,
+  //   exp: 1725532736,
+  // };
   const generatedSignature = crypto
     .createHmac("sha256", process.env.RAZORPAY_KEY_SECRET)
     .update(`${razorpayOrderId}|${paymentId}`)
