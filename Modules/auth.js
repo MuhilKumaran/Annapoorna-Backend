@@ -23,7 +23,10 @@ exports.authenticateAdmin = (req, res, next) => {
   });
 };
 exports.authenticateCustomer = (req, res, next) => {
+  console.log("Auth middle ware");
+  console.log(req.cookies);
   const token = req.cookies.token;
+  console.log(token);
   if (!token) {
     return res.status(401).json({ message: "Login to view the order" });
   }
