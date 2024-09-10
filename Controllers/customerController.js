@@ -6,6 +6,10 @@ const axios = require("axios");
 const jwt = require("jsonwebtoken");
 const SECRET_KEY = process.env.SECRET_KEY;
 const Razorpay = require("razorpay");
+const pdf = require("html-pdf");
+const nodemailer = require("nodemailer");
+const ejs = require("ejs");
+const path = require("path");
 
 //messaging
 const twilio = require("twilio");
@@ -47,7 +51,6 @@ exports.sendOTP = async (req, res) => {
   const { mobileNumber } = req.body;
   const otp = Math.floor(100000 + Math.random() * 900000).toString(); // 6-digit OTP
 
-
   const expiresAt = new Date(Date.now() + 5 * 60 * 1000)
     .toISOString()
     .slice(0, 19)
@@ -86,21 +89,21 @@ exports.sendOTP = async (req, res) => {
 //   const { mobileNumber, otp } = req.body;
 
 //   try {
-//     const sql = `SELECT 
-//           customers.name, 
-//           customers.mobile, 
-//           customers.email, 
-//           customers.password, 
+//     const sql = `SELECT
+//           customers.name,
+//           customers.mobile,
+//           customers.email,
+//           customers.password,
 //           customers.role,
-//           login_otp.otp, 
+//           login_otp.otp,
 //           login_otp.expiresAt
-//       FROM 
+//       FROM
 //           customers
-//       JOIN 
-//           login_otp 
-//       ON 
+//       JOIN
+//           login_otp
+//       ON
 //           customers.mobile = login_otp.mobile
-//       WHERE 
+//       WHERE
 //           login_otp.mobile = ?`;
 
 //     const result = await new Promise((resolve, reject) => {
@@ -244,16 +247,16 @@ exports.verifyOtp = async (req, res) => {
     );
 
     // Send token to the frontend instead of setting it in a cookie
-    return res.status(200).json({ 
-      status: true, 
-      message: "Login Successful", 
+    return res.status(200).json({
+      status: true,
+      message: "Login Successful",
       token,
       user: {
         userName: userRecord.name,
         email: userRecord.email,
         mobile: userRecord.mobile,
-        role: userRecord.role
-      }
+        role: userRecord.role,
+      },
     });
 
     // Clean up OTP after successful login
@@ -266,13 +269,13 @@ exports.verifyOtp = async (req, res) => {
         resolve(result);
       });
     });
-
   } catch (error) {
     console.log(error);
-    return res.status(500).json({ status: false, message: "Error validating OTP" });
+    return res
+      .status(500)
+      .json({ status: false, message: "Error validating OTP" });
   }
 };
-
 
 exports.logoutCustomer = (req, res) => {
   res.clearCookie("token", {
@@ -326,7 +329,7 @@ exports.createOrder = async (req, res) => {
   console.log(req.body);
   console.log("user in create order Route");
   console.log(req.user);
-  const { name, mobile,address,orderItems, totalPrice } = req.body;
+  const { name, mobile, address, orderItems, totalPrice } = req.body;
 
   const options = {
     amount: totalPrice * 100, // Razorpay expects amount in paise
@@ -380,28 +383,108 @@ exports.createOrder = async (req, res) => {
 
 const renderTemplate = (view, data) => {
   return new Promise((resolve, reject) => {
-    app.render(view, data, (err, html) => {
-      if (err) return reject(err);
-      resolve(html);
-    });
+    ejs.renderFile(
+      path.join(__dirname, "views", `${view}.ejs`),
+      data,
+      (err, html) => {
+        if (err) return reject(err);
+        resolve(html);
+      }
+    );
   });
 };
 
+// exports.verifyOrder = async (req, res) => {
+//   const {
+//     orderId,
+//     paymentId,
+//     razorpayOrderId,
+//     razorpaySignature,
+//     orderItems,
+//     totalAmount,
+//   } = req.body;
+//   console.log("body in verify order route");
+//   console.log(req.body);
+//   console.log("user in verify route");
+//   const user = req.user;
+//   console.log(user);
+//   const generatedSignature = crypto
+//     .createHmac("sha256", process.env.RAZORPAY_KEY_SECRET)
+//     .update(`${razorpayOrderId}|${paymentId}`)
+//     .digest("hex");
+
+//   if (generatedSignature === razorpaySignature) {
+//     try {
+//       console.log("hash verified");
+//       const updateSQL =
+//         "UPDATE customer_orders SET payment_status = ? where transaction_id =?";
+//       const updateResult = await new Promise((resolve, reject) => {
+//         db.query(updateSQL, ["paid", orderId], (err, result) => {
+//           if (err) {
+//             return reject(err);
+//           }
+//           resolve(result);
+//         });
+//       });
+//       // res.json({ status: true, message: "Payment Successfull" });
+//       const orderDetails = {
+//         orderId: orderId,
+//         orderDate: new Date().toLocaleString(), // Set the order date
+//         paymentMethod: "Online",
+//         customerName: user.userName,
+//         customerAddress: "Your Address Here", // Replace with actual customer address
+//         customerMobile: user.mobile,
+//         customerEmail: user.email,
+//         orderItems: orderItems,
+//         itemTotal: totalAmount, // Replace with actual item total
+//         deliveryCharge: 100.0, // Replace with actual delivery charge
+//         totalAmount: Number(totalAmount) + deliveryCharge, // Replace with actual total amount
+//       };
+
+//       console.log(orderDetails);
+
+//       await axios.post("http://localhost:8000/generate-pdf-and-send", {
+//         orderId: orderId,
+//         orderDate: new Date().toLocaleString(), // Set the order date
+//         paymentMethod: "Online",
+//         customerName: user.userName,
+//         customerAddress: "Your Address Here", // Replace with actual customer address
+//         customerMobile: user.mobile,
+//         customerEmail: user.email,
+//         orderItems: orderItems,
+//         itemTotal: totalAmount, // Replace with actual item total
+//         deliveryCharge: 100.0, // Replace with actual delivery charge
+//         totalAmount: Number(totalAmount) + deliveryCharge, // Replace with actual total amount
+//       });
+
+//       // Send a success response to the client
+//       res
+//         .status(200)
+//         .json({ status: true, message: "Payment Successful and email sent" });
+//     } catch (error) {
+//       res.status(500).json({ status: false, error: "Database update failed" });
+//     }
+//   } else {
+//     res.status(400).json({ status: false, error: "Invalid Payment signature" });
+//   }
+// };
+
 exports.verifyOrder = async (req, res) => {
-  const { orderId, paymentId, razorpayOrderId, razorpaySignature } = req.body;
+  const {
+    orderId,
+    paymentId,
+    razorpayOrderId,
+    razorpaySignature,
+    orderItems,
+    totalAmount,
+  } = req.body;
   console.log("body in verify order route");
   console.log(req.body);
   console.log("user in verify route");
   const user = req.user;
-  //   SEND ADDRESS AND OTHER DATA FROM HANDLER
-  // const user = {
-  //   userName: "muhil",
-  //   email: "muhil@gmail.com",
-  //   mobile: "9342407556",
-  //   role: "customer",
-  //   iat: 1725529136,
-  //   exp: 1725532736,
-  // };
+  console.log(user);
+  console.log(orderItems);
+
   const generatedSignature = crypto
     .createHmac("sha256", process.env.RAZORPAY_KEY_SECRET)
     .update(`${razorpayOrderId}|${paymentId}`)
@@ -409,41 +492,85 @@ exports.verifyOrder = async (req, res) => {
 
   if (generatedSignature === razorpaySignature) {
     try {
-      // const updateSQL =
-      //   "UPDATE customer_orders SET payment_status = ? where transaction_id =?";
-      // const updateResult = await new Promise((resolve, reject) => {
-      //   db.query(updateSQL, ["paid", orderId], (err, result) => {
-      //     if (err) {
-      //       return reject(err);
-      //     }
-      //     resolve(result);
-      //   });
-      // });
-      // res.json({ status: true, message: "Payment Successfull" });
-      const orderDetails = {
+      console.log("hash verified");
+
+      const updateSQL =
+        "UPDATE customer_orders SET payment_status = ? WHERE transaction_id = ?";
+      await new Promise((resolve, reject) => {
+        db.query(updateSQL, ["paid", orderId], (err, result) => {
+          if (err) {
+            return reject(err);
+          }
+          resolve(result);
+        });
+      });
+
+      const deliveryCharge = 100.0; // Replace with actual delivery charge
+
+      const billData = {
         orderId: orderId,
-        orderDate: new Date().toLocaleString(), // Set the order date
+        orderDate: new Date().toLocaleString(),
         paymentMethod: "Online",
         customerName: user.userName,
-        customerAddress: "Your Address Here", // Replace with actual customer address
+        customerAddress: "Your Address Here",
         customerMobile: user.mobile,
         customerEmail: user.email,
         orderItems: orderItems,
-        itemTotal: 507.0, // Replace with actual item total
-        deliveryCharge: 100.0, // Replace with actual delivery charge
-        totalAmount: 607.0, // Replace with actual total amount
+        itemTotal: totalAmount,
+        deliveryCharge: deliveryCharge,
+        totalAmount: Number(totalAmount) + deliveryCharge,
+      };
+      console.log();
+      // Render the HTML using EJS with the passed data
+      const html = await renderTemplate("bill", billData);
+
+      // Generate the PDF using html-pdf
+      const pdfBuffer = await new Promise((resolve, reject) => {
+        pdf
+          .create(html, { format: "A4", border: "10mm" })
+          .toBuffer((err, buffer) => {
+            if (err) return reject(err);
+            resolve(buffer);
+          });
+      });
+
+      // Send email with the PDF attachment
+      const transporter = nodemailer.createTransport({
+        service: "gmail",
+        auth: {
+          user: "muhilkumaran@gmail.com",
+          pass: "lkmvwumfkxzfblxe",
+        },
+      });
+
+      const mailOptions = {
+        from: "muhilkumaran@gmail.com",
+        to: user.email,
+        subject: `Invoice - Order ${orderId}`,
+        text: `Dear ${user.userName},\n\nPlease find attached the invoice for your recent purchase.\n\nThank you for shopping with us!`,
+        attachments: [
+          {
+            filename: `invoice-${orderId}.pdf`,
+            content: pdfBuffer,
+            contentType: "application/pdf",
+          },
+        ],
       };
 
-      // Make a request to generate the PDF and send the email
-      await axios.post(
-        "http://localhost:8000/generate-pdf-and-send",
-        orderDetails
-      );
+      await new Promise((resolve, reject) => {
+        transporter.sendMail(mailOptions, (error, info) => {
+          if (error) return reject(error);
+          resolve(info);
+        });
+      });
 
       // Send a success response to the client
-      res.json({ status: true, message: "Payment Successful and email sent" });
+      res
+        .status(200)
+        .json({ status: true, message: "Payment Successful and email sent" });
     } catch (error) {
-      res.status(500).json({ status: false, error: "Database update failed" });
+      console.error("Error processing order:", error);
+      res.status(500).json({ status: false, error: "Failed to process order" });
     }
   } else {
     res.status(400).json({ status: false, error: "Invalid Payment signature" });

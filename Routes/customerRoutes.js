@@ -21,7 +21,7 @@ router
 
 router
   .route("/verify-order")
-  .post(customerController.verifyOrder);
+  .post(authenticate.authenticateCustomer,customerController.verifyOrder);
 
 router.route("/webhook").post(customerController.webhook);
 

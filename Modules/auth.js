@@ -16,7 +16,7 @@ exports.authenticateAdmin = (req, res, next) => {
       return res.status(403).json({ message: "Invalid token" });
     }
     req.user = user; // Attach user data to the request object
-    
+
     if (user.role !== "admin")
       return res.status(403).json({ message: "Access denied. Admins only." });
     next();
@@ -49,7 +49,7 @@ exports.authenticateCustomer = (req, res, next) => {
     return res.status(401).json({ message: "Login to view the order" });
   }
 
-  const token = authHeader.split(' ')[1]; // Extract the token
+  const token = authHeader.split(" ")[1]; // Extract the token
   if (!token) {
     return res.status(401).json({ message: "Login to view the order" });
   }
@@ -59,11 +59,13 @@ exports.authenticateCustomer = (req, res, next) => {
       return res.status(403).json({ message: "Invalid token" });
     }
     req.user = user; // Attach user data to the request object
+    console.log("from middle ware");
     console.log(user);
     if (user.role !== "customer") {
-      return res.status(403).json({ message: "Access denied. Customers only." });
+      return res
+        .status(403)
+        .json({ message: "Access denied. Customers only." });
     }
     next();
   });
 };
-
