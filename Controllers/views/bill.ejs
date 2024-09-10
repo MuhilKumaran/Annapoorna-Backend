@@ -98,16 +98,16 @@
               <th>Item</th>
               <th>Qty</th>
               <th>Price</th>
-              <th>Amount</th>
+              <th>Total Amount</th>
             </tr>
           </thead>
           <tbody>
             <% orderItems.forEach(function(item) { %>
             <tr>
               <td><%= item.name %></td>
-              <td><%= item.qty %></td>
+              <td><%= item.quantity %></td>
+              <td>₹<%= (Number(item.price)/item.quantity) %></td>
               <td>₹<%= item.price %></td>
-              <td>₹<%= item.amount %></td>
             </tr>
             <% }); %>
           </tbody>

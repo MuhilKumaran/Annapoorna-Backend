@@ -31,293 +31,92 @@ app.set("view engine", "ejs");
 app.set("views", path.join(__dirname, "views"));
 
 app.use("/menus", menuRoutes);
-
 app.use("/customers", customerRoutes);
 app.use("/admin", adminRoutes);
 
-const renderTemplate = (view, data) => {
-  return new Promise((resolve, reject) => {
-    app.render(view, data, (err, html) => {
-      if (err) return reject(err);
-      resolve(html);
+const nodemailer = require("nodemailer");
+
+// Example POST route for sending contact us email
+app.post("/contactUs", async (req, res) => {
+  try {
+    const { name, mobile, message } = req.body;
+
+    // Create a transport object with Gmail configuration
+    const transporter = nodemailer.createTransport({
+      service: "gmail",
+      auth: {
+        user: "muhilkumaran@gmail.com",
+        pass: "lkmvwumfkxzfblxe",
+      },
     });
-  });
-};
 
-// POST route to create, send PDF and send it as email attachment
-// app.post("/generate-pdf-and-send", async (req, res) => {
-//   const {
-//     orderId,
-//     orderDate,
-//     paymentMethod,
-//     customerName,
-//     customerAddress,
-//     customerMobile,
-//     customerEmail,
-//     orderItems,
-//     itemTotal,
-//     deliveryCharge,
-//     totalAmount,
-//   } = req.body;
+    // Define the HTML content for the email
+    const htmlContent = `
+      <html>
+      <head>
+        <style>
+          .email-body {
+            font-family: Arial, sans-serif;
+            line-height: 1.6;
+          }
+          .header {
+            background-color: #f4f4f4;
+            padding: 10px;
+            text-align: center;
+          }
+          .content {
+            margin: 20px;
+          }
+          .footer {
+            text-align: center;
+            font-size: 0.8em;
+            color: #888;
+          }
+        </style>
+      </head>
+      <body>
+        <div class="email-body">
+          <div class="header">
+            <h2>Contact Us</h2>
+          </div>
+          <div class="content">
+            <p><strong>Name:</strong> ${name}</p>
+            <p><strong>Mobile:</strong> ${mobile}</p>
+            <p><strong>Message:</strong></p>
+            <p>${message}</p>
+          </div>
+          <div class="footer">
+            <p>Thank you for reaching out!</p>
+          </div>
+        </div>
+      </body>
+      </html>
+    `;
 
-//   // Bill data to be passed to the template
 
-//   const billData = {
-//     orderId,
-//     orderDate,
-//     paymentMethod,
-//     customerName,
-//     customerAddress,
-//     customerMobile,
-//     customerEmail,
-//     orderItems,
-//     itemTotal,
-//     deliveryCharge,
-//     totalAmount,
-//   };
-
-//   try {
-//     // Render the HTML using EJS with the passed data
-//     const html = await renderTemplate("bill", billData);
-
-//     // Launch Puppeteer to generate the PDF
-//     const browser = await puppeteer.launch();
-//     const page = await browser.newPage();
-
-//     // Set the content of the page to the rendered HTML
-//     await page.setContent(html, {
-//       waitUntil: "networkidle0",
-//     });
-
-//     // Generate the PDF
-//     const pdfBuffer = await page.pdf({
-//       format: "A4",
-//       printBackground: true,
-//     });
-
-//     // Close the browser
-//     await browser.close();
-
-//     // Send email with the PDF attachment
-//     const transporter = nodemailer.createTransport({
-//       service: "gmail", // or another SMTP service
-//       auth: {
-//         user: "your-email@gmail.com", // your email
-//         pass: "your-email-password", // your email password or app-specific password
-//       },
-//     });
-
-//     const mailOptions = {
-//       from: "your-email@gmail.com",
-//       to: customerEmail,
-//       subject: `Invoice - Order ${orderId}`,
-//       text: `Dear ${customerName},\n\nPlease find attached the invoice for your recent purchase.\n\nThank you for shopping with us!`,
-//       attachments: [
-//         {
-//           filename: `invoice-${orderId}.pdf`,
-//           content: pdfBuffer,
-//           contentType: "application/pdf",
-//         },
-//       ],
-//     };
-
-//     transporter.sendMail(mailOptions, (error, info) => {
-//       if (error) {
-//         console.error("Error sending email:", error);
-//         return res.status(500).send("Failed to send email");
-//       } else {
-//         console.log("Email sent:", info.response);
-//         res.send("PDF generated and email sent successfully");
-//       }
-//     });
-//   } catch (err) {
-//     console.error("Error generating PDF or sending email:", err);
-//     res.status(500).send("Failed to generate PDF and send email");
-//   }
-// });
-
-// app.post("/generate-pdf-and-send", async (req, res) => {
-//   const {
-//     orderId,
-//     orderDate,
-//     paymentMethod,
-//     customerName,
-//     customerAddress,
-//     customerMobile,
-//     customerEmail,
-//     orderItems,
-//     itemTotal,
-//     deliveryCharge,
-//     totalAmount,
-//   } = req.body;
-
-//   // Bill data to be passed to the template
-//   const billData = {
-//     orderId,
-//     orderDate,
-//     paymentMethod,
-//     customerName,
-//     customerAddress,
-//     customerMobile,
-//     customerEmail,
-//     orderItems,
-//     itemTotal,
-//     deliveryCharge,
-//     totalAmount,
-//   };
-
-//   try {
-//     // Render the HTML using EJS with the passed data
-//     const html = await renderTemplate("bill", billData);
-
-//     // Generate the PDF using html-pdf
-//     pdf
-//       .create(html, { format: "A4", border: "10mm" })
-//       .toBuffer((err, pdfBuffer) => {
-//         if (err) {
-//           console.error("Error generating PDF:", err);
-//           return res.status(500).send("Failed to generate PDF");
-//         }
-
-//         // Send email with the PDF attachment
-//         const transporter = nodemailer.createTransport({
-//           service: "gmail", // or another SMTP service
-//           auth: {
-//             user: "muhilkumaran@gmail.com", // your email
-//             pass: "lkmvwumfkxzfblxe", // your email password or app-specific password
-//           },
-//         });
-
-//         const mailOptions = {
-//           from: "muhilkumaran@gmail.com",
-//           to: customerEmail,
-//           subject: `Invoice - Order ${orderId}`,
-//           text: `Dear ${customerName},\n\nPlease find attached the invoice for your recent purchase.\n\nThank you for shopping with us!`,
-//           attachments: [
-//             {
-//               filename: `invoice-${orderId}.pdf`,
-//               content: pdfBuffer,
-//               contentType: "application/pdf",
-//             },
-//           ],
-//         };
-
-//         transporter.sendMail(mailOptions, (error, info) => {
-//           if (error) {
-//             console.error("Error sending email:", error);
-//             return res.status(500).send("Failed to send email");
-//           } else {
-//             console.log("Email sent:", info.response);
-//             res.send("PDF generated and email sent successfully");
-//           }
-//         });
-//       });
-//   } catch (err) {
-//     console.error("Error generating PDF or sending email:", err);
-//     res.status(500).send("Failed to generate PDF and send email");
-//   }
-// });
-
-// const pdf = require("html-pdf");
-
-// POST route to create, send PDF and send it as email attachment
-app.post(
-  "/generate-pdf-and-send",
-  authenticate.authenticateCustomer,
-  async (req, res) => {
-    console.log("in pdf");
-    console.log(req.body);
-    const {
-      orderId,
-      orderDate,
-      paymentMethod,
-      customerName,
-      customerAddress,
-      customerMobile,
-      customerEmail,
-      orderItems,
-      itemTotal,
-      deliveryCharge,
-      totalAmount,
-    } = req.body;
-
-    // Bill data to be passed to the template
-    const billData = {
-      orderId,
-      orderDate,
-      paymentMethod,
-      customerName,
-      customerAddress,
-      customerMobile,
-      customerEmail,
-      orderItems,
-      itemTotal,
-      deliveryCharge,
-      totalAmount,
+    const mailOptions = {
+      from: "muhilkumaran@gmail.com",
+      to: "kumaranmuhil@gmail.com",
+      subject: "Contact Us Form Submission",
+      html: htmlContent,
     };
 
-    try {
-      // Render the HTML using EJS with the passed data
-      const html = await renderTemplate("bill", billData);
 
-      // Generate the PDF using html-pdf
-      pdf
-        .create(html, { format: "A4", border: "10mm" })
-        .toBuffer((err, pdfBuffer) => {
-          if (err) {
-            console.error("Error generating PDF:", err);
-            if (!res.headersSent) {
-              return res.status(500).send("Failed to generate PDF");
-            }
-            return;
-          }
-
-          // Send email with the PDF attachment
-          const transporter = nodemailer.createTransport({
-            service: "gmail", // or another SMTP service
-            auth: {
-              user: "muhilkumaran@gmail.com", // your email
-              pass: "lkmvwumfkxzfblxe", // your email password or app-specific password
-            },
-          });
-
-          const mailOptions = {
-            from: "muhilkumaran@gmail.com",
-            to: customerEmail,
-            subject: `Invoice - Order ${orderId}`,
-            text: `Dear ${customerName},\n\nPlease find attached the invoice for your recent purchase.\n\nThank you for shopping with us!`,
-            attachments: [
-              {
-                filename: `invoice-${orderId}.pdf`,
-                content: pdfBuffer,
-                contentType: "application/pdf",
-              },
-            ],
-          };
-
-          transporter.sendMail(mailOptions, (error, info) => {
-            if (error) {
-              console.error("Error sending email:", error);
-              if (!res.headersSent) {
-                return res.status(500).send("Failed to send email");
-              }
-              return;
-            } else {
-              console.log("Email sent:", info.response);
-              if (!res.headersSent) {
-                return res.send("PDF generated and email sent successfully");
-              }
-              return;
-            }
-          });
-        });
-    } catch (err) {
-      console.error("Error generating PDF or sending email:", err);
-      if (!res.headersSent) {
-        return res.status(500).send("Failed to generate PDF and send email");
-      }
-    }
+    await new Promise((resolve, reject) => {
+      transporter.sendMail(mailOptions, (error, info) => {
+        if (error) return reject(error);
+        resolve(info);
+      });
+    });
+    
+    // Respond with success message
+    return res
+      .status(200)
+      .json({ status: "success", message: "Email Sent Successfully" });
+  } catch (error) {
+    console.log(error);
+    return res.status(500).json({ status: "fail", message: "Failed to Send Email" });
   }
-);
+});
 
 module.exports = app;
