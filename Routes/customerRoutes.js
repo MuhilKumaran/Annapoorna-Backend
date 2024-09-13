@@ -18,10 +18,11 @@ router
   .post(authenticate.authenticateCustomer, customerController.createOrder)
   .get(authenticate.authenticateCustomer, customerController.getOrders);
 
-
 router
   .route("/verify-order")
-  .post(authenticate.authenticateCustomer,customerController.verifyOrder);
+  .post(authenticate.authenticateCustomer, customerController.verifyOrder);
+
+router.route("/contact-us").post(customerController.sendContactUs);
 
 router.route("/webhook").post(customerController.webhook);
 

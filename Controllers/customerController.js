@@ -13,7 +13,6 @@ const path = require("path");
 //messaging
 const twilio = require("twilio");
 
-
 const client = twilio(process.env.TWILIO_SID, process.env.TWILIO_KEY);
 const razorpay = new Razorpay({
   key_id: process.env.RAZORPAY_KEY_ID,
@@ -247,6 +246,16 @@ exports.verifyOtp = async (req, res) => {
       }
     );
 
+    // Clean up OTP after successful login
+    const deleteSQL = `DELETE FROM login_otp WHERE mobile = ?`;
+    const deleteResult = await new Promise((resolve, reject) => {
+      db.query(deleteSQL, [mobileNumber], (err, result) => {
+        if (err) {
+          return reject(err);
+        }
+        resolve(result);
+      });
+    });
     // Send token to the frontend instead of setting it in a cookie
     return res.status(200).json({
       status: true,
@@ -258,17 +267,6 @@ exports.verifyOtp = async (req, res) => {
         mobile: userRecord.mobile,
         role: userRecord.role,
       },
-    });
-
-    // Clean up OTP after successful login
-    const deleteSQL = `DELETE FROM login_otp WHERE mobile = ?`;
-    const deleteResult = await new Promise((resolve, reject) => {
-      db.query(deleteSQL, [mobileNumber], (err, result) => {
-        if (err) {
-          return reject(err);
-        }
-        resolve(result);
-      });
     });
   } catch (error) {
     console.log(error);
@@ -291,19 +289,34 @@ exports.logoutCustomer = (req, res) => {
 
 const sendWhatsAppOrderData = async (userData) => {
   console.log(userData);
-  const { mobile, name, orderId, items, totalAmount, orderStatus } = userData;
+  const {
+    mobile,
+    userName,
+    orderId,
+    items,
+    totalAmount,
+    paymentStatus,
+    deliveryStatus,
+  } = userData;
 
   const orderItems = items.map(
     (item) =>
-      `${item.name} - ${item.weight}, ${item.quantity} quantity, ${item.price}`
+      `${item.name} - ${item.weight}, ${item.quantity} quantity, ${item.price} \n`
   );
 
   const data = {
     apiKey: process.env.AISENSY_KEY,
-    campaignName: "",
+    campaignName: "Order_Data",
     destination: mobile, // Recipient's phone number
-    userName: name, // Your username or identifier
-    templateParams: [name, orderId, orderItems, totalAmount, orderStatus], // Array of template parameters
+    userName: userName, // Your username or identifier
+    templateParams: [
+      name,
+      orderId,
+      orderItems,
+      totalAmount,
+      paymentStatus,
+      deliveryStatus,
+    ], // Array of template parameters
   };
 
   try {
@@ -395,81 +408,7 @@ const renderTemplate = (view, data) => {
   });
 };
 
-// exports.verifyOrder = async (req, res) => {
-//   const {
-//     orderId,
-//     paymentId,
-//     razorpayOrderId,
-//     razorpaySignature,
-//     orderItems,
-//     totalAmount,
-//   } = req.body;
-//   console.log("body in verify order route");
-//   console.log(req.body);
-//   console.log("user in verify route");
-//   const user = req.user;
-//   console.log(user);
-//   const generatedSignature = crypto
-//     .createHmac("sha256", process.env.RAZORPAY_KEY_SECRET)
-//     .update(`${razorpayOrderId}|${paymentId}`)
-//     .digest("hex");
-
-//   if (generatedSignature === razorpaySignature) {
-//     try {
-//       console.log("hash verified");
-//       const updateSQL =
-//         "UPDATE customer_orders SET payment_status = ? where transaction_id =?";
-//       const updateResult = await new Promise((resolve, reject) => {
-//         db.query(updateSQL, ["paid", orderId], (err, result) => {
-//           if (err) {
-//             return reject(err);
-//           }
-//           resolve(result);
-//         });
-//       });
-//       // res.json({ status: true, message: "Payment Successfull" });
-//       const orderDetails = {
-//         orderId: orderId,
-//         orderDate: new Date().toLocaleString(), // Set the order date
-//         paymentMethod: "Online",
-//         customerName: user.userName,
-//         customerAddress: "Your Address Here", // Replace with actual customer address
-//         customerMobile: user.mobile,
-//         customerEmail: user.email,
-//         orderItems: orderItems,
-//         itemTotal: totalAmount, // Replace with actual item total
-//         deliveryCharge: 100.0, // Replace with actual delivery charge
-//         totalAmount: Number(totalAmount) + deliveryCharge, // Replace with actual total amount
-//       };
-
-//       console.log(orderDetails);
-
-//       await axios.post("http://localhost:8000/generate-pdf-and-send", {
-//         orderId: orderId,
-//         orderDate: new Date().toLocaleString(), // Set the order date
-//         paymentMethod: "Online",
-//         customerName: user.userName,
-//         customerAddress: "Your Address Here", // Replace with actual customer address
-//         customerMobile: user.mobile,
-//         customerEmail: user.email,
-//         orderItems: orderItems,
-//         itemTotal: totalAmount, // Replace with actual item total
-//         deliveryCharge: 100.0, // Replace with actual delivery charge
-//         totalAmount: Number(totalAmount) + deliveryCharge, // Replace with actual total amount
-//       });
-
-//       // Send a success response to the client
-//       res
-//         .status(200)
-//         .json({ status: true, message: "Payment Successful and email sent" });
-//     } catch (error) {
-//       res.status(500).json({ status: false, error: "Database update failed" });
-//     }
-//   } else {
-//     res.status(400).json({ status: false, error: "Invalid Payment signature" });
-//   }
-// };
-
+// { mobile, name, orderId, items, totalAmount, orderStatus }
 exports.verifyOrder = async (req, res) => {
   const {
     orderId,
@@ -505,6 +444,17 @@ exports.verifyOrder = async (req, res) => {
           resolve(result);
         });
       });
+      const userData = {
+        mobile: user.mobile,
+        userName: user.name,
+        orderId: "TEST123",
+        items: orderItems,
+        totalAmount: totalAmount,
+        paymentStatus: "paid",
+        deliveryStatus: "Order in Processing",
+      };
+
+      sendWhatsAppOrderData(userData);
 
       const deliveryCharge = 100.0; // Replace with actual delivery charge
 
@@ -578,6 +528,88 @@ exports.verifyOrder = async (req, res) => {
   }
 };
 
+exports.sendContactUs = async (req, res) => {
+  try {
+    const { name, mobile, message } = req.body;
+
+    // Create a transport object with Gmail configuration
+    const transporter = nodemailer.createTransport({
+      service: "gmail",
+      auth: {
+        user: "muhilkumaran@gmail.com",
+        pass: "lkmvwumfkxzfblxe",
+      },
+    });
+
+    // Define the HTML content for the email
+    const htmlContent = `
+      <html>
+      <head>
+        <style>
+          .email-body {
+            font-family: Arial, sans-serif;
+            line-height: 1.6;
+          }
+          .header {
+            background-color: #f4f4f4;
+            padding: 10px;
+            text-align: center;
+          }
+          .content {
+            margin: 20px;
+          }
+          .footer {
+            text-align: center;
+            font-size: 0.8em;
+            color: #888;
+          }
+        </style>
+      </head>
+      <body>
+        <div class="email-body">
+          <div class="header">
+            <h2>Contact Us</h2>
+          </div>
+          <div class="content">
+            <p><strong>Name:</strong> ${name}</p>
+            <p><strong>Mobile:</strong> ${mobile}</p>
+            <p><strong>Message:</strong></p>
+            <p>${message}</p>
+          </div>
+          <div class="footer">
+            <p>Thank you for reaching out!</p>
+          </div>
+        </div>
+      </body>
+      </html>
+    `;
+
+    const mailOptions = {
+      from: "muhilkumaran@gmail.com",
+      to: "kumaranmuhil@gmail.com",
+      subject: "Contact Us ",
+      html: htmlContent,
+    };
+
+    await new Promise((resolve, reject) => {
+      transporter.sendMail(mailOptions, (error, info) => {
+        if (error) return reject(error);
+        resolve(info);
+      });
+    });
+
+    // Respond with success message
+    return res
+      .status(200)
+      .json({ status: true, message: "Email Sent Successfully" });
+  } catch (error) {
+    console.log(error);
+    return res
+      .status(500)
+      .json({ status: false, message: "Failed to Send Email" });
+  }
+};
+
 exports.webhook = async (req, res) => {
   const secret = "YOUR_WEBHOOK_SECRET";
   // Verify the webhook signature
@@ -634,13 +666,17 @@ exports.webhook = async (req, res) => {
     res.status(400).json({ status: false, message: "invalid signature" });
   }
 };
-
+// http://localhost:3000/get-orders?mobileNumber=1234567890
 exports.getOrders = async (req, res) => {
   try {
-    const { mobile } = req.user;
+    const { mobileNumber } = req.query;
+    if (!mobileNumber)
+      return res
+        .status(400)
+        .json({ status: false, message: "mobileNumber is required to Fetch orders" });
     const sql = "SELECT * FROM customer_orders WHERE mobile = ? LIMIT 4";
     const result = await new Promise((resolve, reject) => {
-      db.query(sql, [mobile], (err, result) => {
+      db.query(sql, [mobileNumber], (err, result) => {
         if (err) {
           return reject(err);
         }
