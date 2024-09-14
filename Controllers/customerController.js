@@ -432,7 +432,7 @@ exports.verifyOrder = async (req, res) => {
   if (generatedSignature === razorpaySignature) {
     try {
       console.log("hash verified");
-
+      console.log(user);
       const updateSQL =
         "UPDATE customer_orders SET payment_status = ? WHERE transaction_id = ?";
       await new Promise((resolve, reject) => {
