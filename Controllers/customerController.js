@@ -337,6 +337,59 @@ exports.logoutCustomer = (req, res) => {
 //   }
 // };
 
+// const sendWhatsAppOrderData = async (userData) => {
+//   console.log(userData);
+//   const {
+//     mobile,
+//     userName,
+//     orderId,
+//     items,
+//     totalAmount,
+//     paymentStatus,
+//     deliveryStatus,
+//   } = userData;
+
+//   // Convert order items array to a string, listing each item on a new line
+//   const orderItems = items
+//     .map(
+//       (item) =>
+//         `${item.name} - ${item.weight}, ${item.quantity} quantity, ₹${item.price}`
+//     )
+//     .join("\n"); // Join items into a single string with line breaks
+
+//   const data = {
+//     apiKey: process.env.AISENSY_KEY,
+//     campaignName: "Order_Data",
+//     destination: String(mobile), // Ensure mobile is a string
+//     userName: String(userName),  // Ensure userName is a string
+//     templateParams: [
+//       String(userName),
+//       orderItems, // Ensure the items are properly formatted as a single string
+//       String(totalAmount),
+//       String(paymentStatus),
+//       String(deliveryStatus),
+//     ], // Array of template parameters must all be strings
+//   };
+
+//   try {
+//     const response = await axios.post(
+//       "https://backend.aisensy.com/campaign/t1/api/v2",
+//       data,
+//       {
+//         headers: {
+//           "Content-Type": "application/json",
+//         },
+//       }
+//     );
+//     console.log("Message sent successfully:", response.data);
+//   } catch (error) {
+//     console.error(
+//       "Error sending message:",
+//       error.response ? error.response.data : error.message
+//     );
+//   }
+// };
+
 const sendWhatsAppOrderData = async (userData) => {
   console.log(userData);
   const {
@@ -347,6 +400,7 @@ const sendWhatsAppOrderData = async (userData) => {
     totalAmount,
     paymentStatus,
     deliveryStatus,
+    mediaUrl, // Include media URL in the userData
   } = userData;
 
   // Convert order items array to a string, listing each item on a new line
@@ -361,7 +415,7 @@ const sendWhatsAppOrderData = async (userData) => {
     apiKey: process.env.AISENSY_KEY,
     campaignName: "Order_Data",
     destination: String(mobile), // Ensure mobile is a string
-    userName: String(userName),  // Ensure userName is a string
+    userName: String(userName), // Ensure userName is a string
     templateParams: [
       String(userName),
       orderItems, // Ensure the items are properly formatted as a single string
@@ -369,6 +423,7 @@ const sendWhatsAppOrderData = async (userData) => {
       String(paymentStatus),
       String(deliveryStatus),
     ], // Array of template parameters must all be strings
+    mediaUrl: mediaUrl || "", // Add the media URL if available
   };
 
   try {
@@ -460,7 +515,8 @@ const renderTemplate = (view, data) => {
   });
 };
 
-// { mobile, name, orderId, items, totalAmount, orderStatus }
+// const{ mobile, name, orderId, items, totalAmount, orderStatus}
+
 exports.verifyOrder = async (req, res) => {
   const {
     orderId,
