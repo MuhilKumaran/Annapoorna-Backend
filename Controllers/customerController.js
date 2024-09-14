@@ -287,6 +287,56 @@ exports.logoutCustomer = (req, res) => {
     .json({ status: true, message: "Logged out successfully" });
 };
 
+// const sendWhatsAppOrderData = async (userData) => {
+//   console.log(userData);
+//   const {
+//     mobile,
+//     userName,
+//     orderId,
+//     items,
+//     totalAmount,
+//     paymentStatus,
+//     deliveryStatus,
+//   } = userData;
+
+//   const orderItems = items.map(
+//     (item) =>
+//       `${item.name} - ${item.weight}, ${item.quantity} quantity, ${item.price} \n`
+//   );
+
+//   const data = {
+//     apiKey: process.env.AISENSY_KEY,
+//     campaignName: "Order_Data",
+//     destination: mobile, // Recipient's phone number
+//     userName: userName, // Your username or identifier
+//     templateParams: [
+//       userName,
+//       orderItems,
+//       totalAmount,
+//       paymentStatus,
+//       deliveryStatus,
+//     ], // Array of template parameters
+//   };
+
+//   try {
+//     const response = await axios.post(
+//       "https://backend.aisensy.com/campaign/t1/api/v2",
+//       data,
+//       {
+//         headers: {
+//           "Content-Type": "application/json",
+//         },
+//       }
+//     );
+//     console.log("Message sent successfully:", response.data);
+//   } catch (error) {
+//     console.error(
+//       "Error sending message:",
+//       error.response ? error.response.data : error.message
+//     );
+//   }
+// };
+
 const sendWhatsAppOrderData = async (userData) => {
   console.log(userData);
   const {
@@ -299,23 +349,26 @@ const sendWhatsAppOrderData = async (userData) => {
     deliveryStatus,
   } = userData;
 
-  const orderItems = items.map(
-    (item) =>
-      `${item.name} - ${item.weight}, ${item.quantity} quantity, ${item.price} \n`
-  );
+  // Convert order items array to a string, listing each item on a new line
+  const orderItems = items
+    .map(
+      (item) =>
+        `${item.name} - ${item.weight}, ${item.quantity} quantity, ₹${item.price}`
+    )
+    .join("\n"); // Join items into a single string with line breaks
 
   const data = {
     apiKey: process.env.AISENSY_KEY,
     campaignName: "Order_Data",
-    destination: mobile, // Recipient's phone number
-    userName: userName, // Your username or identifier
+    destination: String(mobile), // Ensure mobile is a string
+    userName: String(userName),  // Ensure userName is a string
     templateParams: [
-      userName,
-      orderItems,
-      totalAmount,
-      paymentStatus,
-      deliveryStatus,
-    ], // Array of template parameters
+      String(userName),
+      orderItems, // Ensure the items are properly formatted as a single string
+      String(totalAmount),
+      String(paymentStatus),
+      String(deliveryStatus),
+    ], // Array of template parameters must all be strings
   };
 
   try {
