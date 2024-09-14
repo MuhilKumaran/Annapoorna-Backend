@@ -310,8 +310,7 @@ const sendWhatsAppOrderData = async (userData) => {
     destination: mobile, // Recipient's phone number
     userName: userName, // Your username or identifier
     templateParams: [
-      name,
-      orderId,
+      userName,
       orderItems,
       totalAmount,
       paymentStatus,
@@ -673,7 +672,10 @@ exports.getOrders = async (req, res) => {
     if (!mobileNumber)
       return res
         .status(400)
-        .json({ status: false, message: "mobileNumber is required to Fetch orders" });
+        .json({
+          status: false,
+          message: "mobileNumber is required to Fetch orders",
+        });
     const sql = "SELECT * FROM customer_orders WHERE mobile = ? LIMIT 4";
     const result = await new Promise((resolve, reject) => {
       db.query(sql, [mobileNumber], (err, result) => {
