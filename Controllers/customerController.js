@@ -445,7 +445,7 @@ exports.verifyOrder = async (req, res) => {
       });
       const userData = {
         mobile: user.mobile,
-        userName: user.name,
+        userName: user.userName,
         orderId: "TEST123",
         items: orderItems,
         totalAmount: totalAmount,
@@ -671,12 +671,10 @@ exports.getOrders = async (req, res) => {
   try {
     const { mobileNumber } = req.query;
     if (!mobileNumber)
-      return res
-        .status(400)
-        .json({
-          status: false,
-          message: "mobileNumber is required to Fetch orders",
-        });
+      return res.status(400).json({
+        status: false,
+        message: "mobileNumber is required to Fetch orders",
+      });
     const sql = "SELECT * FROM customer_orders WHERE mobile = ? LIMIT 4";
     const result = await new Promise((resolve, reject) => {
       db.query(sql, [mobileNumber], (err, result) => {
