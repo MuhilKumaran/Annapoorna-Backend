@@ -452,7 +452,8 @@ exports.verifyOrder = async (req, res) => {
         paymentStatus: "paid",
         deliveryStatus: "Order in Processing",
       };
-
+      console.log("Before sending Aisensys");
+      console.log(userData.userName);
       sendWhatsAppOrderData(userData);
 
       const deliveryCharge = 100.0; // Replace with actual delivery charge
