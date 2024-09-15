@@ -423,8 +423,10 @@ const sendWhatsAppOrderData = async (userData) => {
       String(paymentStatus),
       String(deliveryStatus),
     ], // Array of template parameters must all be strings
-    mediaUrl:
-      "https://raw.githubusercontent.com/raguram1243/AJ-crackers/main/sparklers/7cm color sparklers.png", // Add the media URL if available
+    media: {
+      url: "https://aisensy-project-media-library-stg.s3.ap-south-1.amazonaws.com/IMAGE/5f450b00f71d36faa1d02bc4/9884334_graffiti%20dsdjpg",
+      filename: "demo-file",
+    },
   };
 
   try {
