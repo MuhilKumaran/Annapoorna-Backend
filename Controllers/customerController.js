@@ -564,7 +564,7 @@ exports.verifyOrder = async (req, res) => {
       };
       console.log("Before sending Aisensys");
       console.log(userData.userName);
-      sendWhatsAppOrderData(userData);
+      // sendWhatsAppOrderData(userData);
 
       const deliveryCharge = 100.0; // Replace with actual delivery charge
 
