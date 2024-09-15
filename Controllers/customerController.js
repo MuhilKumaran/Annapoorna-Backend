@@ -400,16 +400,14 @@ const sendWhatsAppOrderData = async (userData) => {
     totalAmount,
     paymentStatus,
     deliveryStatus,
-    mediaUrl, // Include media URL in the userData
   } = userData;
 
-  // Convert order items array to a string, listing each item on a new line
   const orderItems = items
     .map(
       (item) =>
-        `${item.name} - ${item.weight}, ${item.quantity} quantity, ₹${item.price}`
+        `${item.name} - ${item.weight}, ${item.quantity} quantity, ₹ ${item.price}`
     )
-    .join("\n"); // Join items into a single string with line breaks
+    .join("");
 
   const data = {
     apiKey: process.env.AISENSY_KEY,
@@ -456,9 +454,9 @@ exports.createOrder = async (req, res) => {
   const { name, mobile, address, orderItems, totalPrice } = req.body;
 
   const options = {
-    amount: totalPrice * 100, // Razorpay expects amount in paise
+    amount: totalPrice * 100,
     currency: "INR",
-    receipt: `receipt_${Date.now()}`, // Unique receipt ID
+    receipt: `receipt_${Date.now()}`,
   };
   try {
     const order = await razorpay.orders.create(options);
