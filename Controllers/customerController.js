@@ -678,7 +678,7 @@ exports.sendContactUs = async (req, res) => {
       <body>
         <div class="email-body">
           <div class="header">
-            <h2>Contact Us</h2>
+            <h2>FEEDBACK</h2>
           </div>
           <div class="content">
             <p><strong>Name:</strong> ${name}</p>
@@ -697,7 +697,7 @@ exports.sendContactUs = async (req, res) => {
     const mailOptions = {
       from: "muhilkumaran@gmail.com",
       to: "kumaranmuhil@gmail.com",
-      subject: "Contact Us ",
+      subject: "Someone Tried To Contact You",
       html: htmlContent,
     };
 
