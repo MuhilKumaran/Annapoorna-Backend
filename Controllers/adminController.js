@@ -36,7 +36,7 @@ exports.loginAdmin = async (req, res) => {
 
     // Promise-based query execution
     const sql = "SELECT email,password FROM admins WHERE email = ?";
-    
+
     const result = await new Promise((resolve, reject) => {
       db.query(sql, [email], (err, result) => {
         if (err) {
@@ -170,7 +170,7 @@ exports.manageOrder = async (req, res) => {
     });
     if (result.affectedRows > 0) {
       const SQL = "SELECT * from customer_orders where order_id =?";
-   
+
       const result = await new Promise((resolve, reject) => {
         db.query(SQL, [order_id], (err, result) => {
           if (err) {
@@ -180,7 +180,7 @@ exports.manageOrder = async (req, res) => {
         });
       });
       orderData = result[0];
-      sendDeliveryStatus(orderData);
+      // sendDeliveryStatus(orderData);
       return res
         .status(200)
         .json({ status: true, message: "Order status updated successfully" });

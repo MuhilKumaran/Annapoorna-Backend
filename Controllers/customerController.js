@@ -780,6 +780,9 @@ exports.webhook = async (req, res) => {
 exports.getOrders = async (req, res) => {
   try {
     const { mobileNumber } = req.query;
+    console.log("In get order");
+    console.log(req.query);
+    console.log(mobileNumber);
     if (!mobileNumber)
       return res.status(400).json({
         status: false,
