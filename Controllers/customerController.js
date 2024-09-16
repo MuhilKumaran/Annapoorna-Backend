@@ -451,7 +451,7 @@ exports.createOrder = async (req, res) => {
   console.log(req.body);
   console.log("user in create order Route");
   console.log(req.user);
-  const { name, mobile, address, orderItems, totalPrice } = req.body;
+  const { name, mobile, address, orderItems, totalPrice,user_mobile } = req.body;
 
   const options = {
     amount: totalPrice * 100,
@@ -471,7 +471,7 @@ exports.createOrder = async (req, res) => {
       .replace("T", " ");
     const sql = `
   INSERT INTO customer_orders 
-  (transaction_id, name, mobile,address, order_items, total_price, created_at, payment_status, delivery_status) 
+  (transaction_id, name, mobile,address, order_items, total_price,user_mobile, created_at, payment_status, delivery_status) 
   VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`;
 
     const result = await new Promise((resolve, reject) => {
@@ -484,6 +484,7 @@ exports.createOrder = async (req, res) => {
           address,
           JSON.stringify(orderItems), // Convert orderItems to JSON string
           totalPrice,
+          user_mobile,
           currentDate,
           "pending",
           "processing", // Make sure this value matches the expected data type
@@ -567,7 +568,7 @@ exports.verifyOrder = async (req, res) => {
       console.log(userData.userName);
       // sendWhatsAppOrderData(userData);
 
-      const deliveryCharge = 100.0; // Replace with actual delivery charge
+      const deliveryCharge = 100.0; 
 
       const billData = {
         orderId: orderId,
