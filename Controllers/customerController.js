@@ -526,6 +526,7 @@ exports.verifyOrder = async (req, res) => {
     razorpaySignature,
     orderItems,
     totalAmount,
+    email,
   } = req.body;
   console.log("body in verify order route");
   console.log(req.body);
@@ -575,7 +576,7 @@ exports.verifyOrder = async (req, res) => {
         customerName: user.userName,
         customerAddress: "Your Address Here",
         customerMobile: user.mobile,
-        customerEmail: user.email,
+        customerEmail: email,
         orderItems: orderItems,
         itemTotal: totalAmount,
         deliveryCharge: deliveryCharge,
@@ -606,7 +607,7 @@ exports.verifyOrder = async (req, res) => {
 
       const mailOptions = {
         from: "muhilkumaran@gmail.com",
-        to: user.email,
+        to: email,
         subject: `Invoice - Order ${orderId}`,
         text: `Dear ${user.userName},\n\nPlease find attached the invoice for your recent purchase.\n\nThank you for shopping with us!`,
         attachments: [
