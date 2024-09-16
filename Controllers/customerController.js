@@ -451,7 +451,8 @@ exports.createOrder = async (req, res) => {
   console.log(req.body);
   console.log("user in create order Route");
   console.log(req.user);
-  const { name, mobile, address, orderItems, totalPrice,user_mobile } = req.body;
+  const { name, mobile, address, orderItems, totalPrice, user_mobile } =
+    req.body;
 
   const options = {
     amount: totalPrice * 100,
@@ -568,7 +569,7 @@ exports.verifyOrder = async (req, res) => {
       console.log(userData.userName);
       // sendWhatsAppOrderData(userData);
 
-      const deliveryCharge = 100.0; 
+      const deliveryCharge = 100.0;
 
       const billData = {
         orderId: orderId,
@@ -790,7 +791,9 @@ exports.getOrders = async (req, res) => {
         status: false,
         message: "mobileNumber is required to Fetch orders",
       });
-    const sql = "SELECT * FROM customer_orders WHERE mobile = ? LIMIT 4";
+    // const sql = "SELECT * FROM customer_orders WHERE mobile = ? LIMIT 4";
+    const sql =
+      "SELECT * FROM customer_orders WHERE mobile = ? ORDER BY created_at DESC LIMIT 4";
     const result = await new Promise((resolve, reject) => {
       db.query(sql, [mobileNumber], (err, result) => {
         if (err) {
