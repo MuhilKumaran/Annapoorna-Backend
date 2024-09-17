@@ -454,6 +454,18 @@ exports.createOrder = async (req, res) => {
   const { name, mobile, address, orderItems, totalPrice, user_mobile } =
     req.body;
 
+  if (
+    !name ||
+    !mobile ||
+    !address ||
+    !orderItems ||
+    !totalPrice ||
+    !user_mobile
+  )
+    return res
+      .status(400)
+      .json({ status: false, message: "All Details are Needed" });
+
   const options = {
     amount: totalPrice * 100,
     currency: "INR",
@@ -531,10 +543,12 @@ exports.verifyOrder = async (req, res) => {
     email,
     userName,
     address,
-    mobile
+    mobile,
   } = req.body;
   console.log("body in verify order route");
   console.log(req.body);
+  console.log("email in verify order Route");
+  console.log(email);
   console.log("user in verify route");
   const user = req.user;
   console.log(user);
@@ -794,9 +808,9 @@ exports.getOrders = async (req, res) => {
         status: false,
         message: "mobileNumber is required to Fetch orders",
       });
-    // const sql = "SELECT * FROM customer_orders WHERE mobile = ? LIMIT 4";
+    // const sql = "SELECT * FROM customer_orders WHERE user_mobile = ? LIMIT 4";
     const sql =
-      "SELECT * FROM customer_orders WHERE mobile = ? ORDER BY created_at DESC LIMIT 4";
+      "SELECT * FROM customer_orders WHERE user_mobile = ? ORDER BY created_at DESC LIMIT 4";
     const result = await new Promise((resolve, reject) => {
       db.query(sql, [mobileNumber], (err, result) => {
         if (err) {
