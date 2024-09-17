@@ -202,7 +202,7 @@ exports.getOrdersByDeliveryStatus = async (req, res) => {
   try {
     const SQL = "SELECT * from customer_orders WHERE delivery_status = ?";
     const result = await new Promise((resolve, reject) => {
-      db.query(SQL, deliveryStatus, (err, result) => {
+      db.query(SQL, [deliveryStatus], (err, result) => {
         if (err) {
           return reject(err);
         }
@@ -213,6 +213,7 @@ exports.getOrdersByDeliveryStatus = async (req, res) => {
       .status(200)
       .json({ status: true, mesasage: "Order Retrived Successfully", result });
   } catch (error) {
+    console.log(error);
     return res
       .status(500)
       .json({ status: false, message: "Getting orders Failed" });

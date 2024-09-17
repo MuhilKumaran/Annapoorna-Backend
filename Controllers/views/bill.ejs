@@ -71,7 +71,10 @@
         </p>
       </div>
       <hr />
-      <div class="details-container">
+      <div
+        class="details-container"
+        style="display: flex; justify-content: space-between"
+      >
         <div class="order-details">
           <h3>Order details</h3>
           <p>Order ID: <%= orderId %></p>
@@ -82,8 +85,8 @@
         <div class="customer-details">
           <h3>Customer details</h3>
           <p>
-            <%= customerName %><br />
-            <%= customerAddress %><br />
+            Name: <%= customerName %><br />
+            Address: <%= customerAddress %><br />
             Mobile: <%= customerMobile %><br />
             Email: <%= customerEmail %>
           </p>

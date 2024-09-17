@@ -14,7 +14,7 @@ router
   .post(authenticate.authenticateCustomer, customerController.logoutCustomer);
 
 router
-  .route("/create-order")
+  .route("/orders")
   .post(authenticate.authenticateCustomer, customerController.createOrder)
   .get(authenticate.authenticateCustomer, customerController.getOrders);
 

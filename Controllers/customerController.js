@@ -529,6 +529,9 @@ exports.verifyOrder = async (req, res) => {
     orderItems,
     totalAmount,
     email,
+    userName,
+    address,
+    mobile
   } = req.body;
   console.log("body in verify order route");
   console.log(req.body);
@@ -562,7 +565,7 @@ exports.verifyOrder = async (req, res) => {
         orderId: "TEST123",
         items: orderItems,
         totalAmount: totalAmount,
-        paymentStatus: "paid",
+        paymentStatus: "Paid",
         deliveryStatus: "Order in Processing",
       };
       console.log("Before sending Aisensys");
@@ -575,9 +578,9 @@ exports.verifyOrder = async (req, res) => {
         orderId: orderId,
         orderDate: new Date().toLocaleString(),
         paymentMethod: "Online",
-        customerName: user.userName,
-        customerAddress: "Your Address Here",
-        customerMobile: user.mobile,
+        customerName: userName,
+        customerAddress: address,
+        customerMobile: mobile,
         customerEmail: email,
         orderItems: orderItems,
         itemTotal: totalAmount,
