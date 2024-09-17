@@ -240,10 +240,10 @@ exports.verifyOtp = async (req, res) => {
         mobile: userRecord.mobile,
         role: userRecord.role,
       },
-      SECRET_KEY,
-      {
-        expiresIn: "1h",
-      }
+      SECRET_KEY
+      // {
+      //   expiresIn: "1h",
+      // }
     );
 
     // Clean up OTP after successful login
