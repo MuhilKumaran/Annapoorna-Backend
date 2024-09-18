@@ -120,12 +120,16 @@
               <td>₹<%= itemTotal %></td>
             </tr>
             <tr class="line">
+              <td colspan="3">GST(12%)</td>
+              <td>₹<%= gst %></td>
+            </tr>
+            <tr class="line">
               <td colspan="3">Delivery</td>
               <td>₹<%= deliveryCharge %></td>
             </tr>
             <tr>
               <td colspan="3"><strong>Total</strong></td>
-              <td><strong>₹<%= totalAmount %></strong></td>
+              <td><strong>₹<%= finalAmount %></strong></td>
             </tr>
           </tfoot>
         </table>

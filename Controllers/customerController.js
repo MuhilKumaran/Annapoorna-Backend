@@ -544,6 +544,8 @@ exports.verifyOrder = async (req, res) => {
     userName,
     address,
     mobile,
+    gst,
+    delivery,
     user_mobile,
   } = req.body;
   console.log("body in verify order route");
@@ -618,7 +620,7 @@ exports.verifyOrder = async (req, res) => {
       console.log(userData.userName);
       // sendWhatsAppOrderData(userData);
 
-      const deliveryCharge = 100.0;
+      
 
       const billData = {
         orderId: orderId,
@@ -630,8 +632,9 @@ exports.verifyOrder = async (req, res) => {
         customerEmail: email,
         orderItems: orderItems,
         itemTotal: totalAmount,
-        deliveryCharge: deliveryCharge,
-        totalAmount: Number(totalAmount) + deliveryCharge,
+        gst:gst,
+        deliveryCharge: delivery,
+        finalAmount: Number(totalAmount) + Number(deliveryCharge) + Number(gst),
       };
       console.log();
       // Render the HTML using EJS with the passed data
