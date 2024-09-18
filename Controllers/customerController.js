@@ -620,8 +620,6 @@ exports.verifyOrder = async (req, res) => {
       console.log(userData.userName);
       // sendWhatsAppOrderData(userData);
 
-      
-
       const billData = {
         orderId: orderId,
         orderDate: new Date().toLocaleString(),
@@ -632,7 +630,7 @@ exports.verifyOrder = async (req, res) => {
         customerEmail: email,
         orderItems: orderItems,
         itemTotal: totalAmount,
-        gst:gst,
+        gst: gst,
         deliveryCharge: delivery,
         finalAmount: Number(totalAmount) + Number(deliveryCharge) + Number(gst),
       };
@@ -685,10 +683,11 @@ exports.verifyOrder = async (req, res) => {
         .status(200)
         .json({ status: true, message: "Payment Successful and email sent" });
     } catch (error) {
-      console.error("Error processing order:", error);
+      console.log("Error processing order:", error);
       res.status(500).json({ status: false, error: "Failed to process order" });
     }
   } else {
+    c;
     res.status(400).json({ status: false, error: "Invalid Payment signature" });
   }
 };
