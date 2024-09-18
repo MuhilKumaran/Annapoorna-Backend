@@ -631,10 +631,11 @@ exports.verifyOrder = async (req, res) => {
         orderItems: orderItems,
         itemTotal: totalAmount,
         gst: gst,
-        deliveryCharge: delivery,
-        finalAmount: Number(totalAmount) + Number(deliveryCharge) + Number(gst),
+        delivery,
+        finalAmount: Number(totalAmount) + Number(delivery) + Number(gst),
       };
-      console.log();
+      console.log("bill data");
+      console.log(billData);
       // Render the HTML using EJS with the passed data
       const html = await renderTemplate("bill", billData);
 
