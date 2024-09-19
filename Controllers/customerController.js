@@ -561,7 +561,7 @@ exports.verifyOrder = async (req, res) => {
     .createHmac("sha256", process.env.RAZORPAY_KEY_SECRET)
     .update(`${razorpayOrderId}|${paymentId}`)
     .digest("hex");
-
+  const finalTotalAmount = Number(totalAmount) + Number(gst) + Number(delivery);
   if (generatedSignature === razorpaySignature) {
     try {
       console.log("hash verified");
@@ -593,7 +593,7 @@ exports.verifyOrder = async (req, res) => {
             mobile,
             address,
             JSON.stringify(orderItems), // Convert orderItems to JSON string
-            totalAmount,
+            finalTotalAmount,
             user_mobile,
             currentDate,
             "paid",
