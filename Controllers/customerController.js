@@ -478,38 +478,38 @@ exports.createOrder = async (req, res) => {
         .status(500)
         .json({ status: false, message: "Error in Creating Payment" });
 
-    const currentDate = new Date(Date.now())
-      .toISOString()
-      .slice(0, 19)
-      .replace("T", " ");
-    const sql = `
-    INSERT INTO customer_orders
-    (transaction_id, name, mobile,address, order_items, total_price,user_mobile, created_at, payment_status, delivery_status)
-    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?,?)`;
+    // const currentDate = new Date(Date.now())
+    //   .toISOString()
+    //   .slice(0, 19)
+    //   .replace("T", " ");
+    // const sql = `
+    // INSERT INTO customer_orders
+    // (transaction_id, name, mobile,address, order_items, total_price,user_mobile, created_at, payment_status, delivery_status)
+    // VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?,?)`;
 
-    const result = await new Promise((resolve, reject) => {
-      db.query(
-        sql,
-        [
-          order.id,
-          name,
-          mobile,
-          address,
-          JSON.stringify(orderItems), // Convert orderItems to JSON string
-          totalPrice,
-          user_mobile,
-          currentDate,
-          "pending",
-          "processing", // Make sure this value matches the expected data type
-        ],
-        (err, result) => {
-          if (err) {
-            return reject(err);
-          }
-          resolve(result);
-        }
-      );
-    });
+    // const result = await new Promise((resolve, reject) => {
+    //   db.query(
+    //     sql,
+    //     [
+    //       order.id,
+    //       name,
+    //       mobile,
+    //       address,
+    //       JSON.stringify(orderItems), // Convert orderItems to JSON string
+    //       totalPrice,
+    //       user_mobile,
+    //       currentDate,
+    //       "pending",
+    //       "processing", // Make sure this value matches the expected data type
+    //     ],
+    //     (err, result) => {
+    //       if (err) {
+    //         return reject(err);
+    //       }
+    //       resolve(result);
+    //     }
+    //   );
+    // });
     return res.status(201).json(order);
   } catch (error) {
     console.log(error);
