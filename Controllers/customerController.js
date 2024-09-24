@@ -560,9 +560,10 @@ exports.verifyOrder = async (req, res) => {
   const user = req.user;
   console.log(user);
   console.log(orderItems);
-  if (!preorderDate) preorderDate = null;
+  // if (!preorderDate) preorderDate = null;
+  let preOrderDate = preorderDate ? preorderDate : null;
   console.log("preorder date");
-  console.log(preorderDate);
+  console.log(preOrderDate);
   const generatedSignature = crypto
     .createHmac("sha256", process.env.RAZORPAY_KEY_SECRET)
     .update(`${razorpayOrderId}|${paymentId}`)
@@ -592,7 +593,7 @@ exports.verifyOrder = async (req, res) => {
             finalTotalAmount,
             user_mobile,
             currentDate,
-            preorderDate,
+            preOrderDate,
             "paid",
             "processing", // Make sure this value matches the expected data type
           ],
@@ -620,7 +621,7 @@ exports.verifyOrder = async (req, res) => {
       const billData = {
         orderId: orderId,
         orderDate: new Date().toLocaleString(),
-        preorderDate,
+        preOrderDate,
         paymentMethod: "Online",
         customerName: userName,
         customerAddress: address,
