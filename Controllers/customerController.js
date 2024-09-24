@@ -837,7 +837,7 @@ exports.getOrders = async (req, res) => {
       });
     // const sql = "SELECT * FROM customer_orders WHERE user_mobile = ? LIMIT 4";
     const sql =
-      "SELECT * FROM customer_orders WHERE user_mobile = ? ORDER BY created_at DESC LIMIT 4";
+      "SELECT * FROM customer_orders WHERE user_mobile = ? ORDER BY created_at DESC";
     const result = await new Promise((resolve, reject) => {
       db.query(sql, [mobileNumber], (err, result) => {
         if (err) {
