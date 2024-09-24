@@ -549,6 +549,9 @@ exports.verifyOrder = async (req, res) => {
     user_mobile,
     preorderDate,
   } = req.body;
+
+  
+
   console.log("body in verify order route");
   console.log(req.body);
   console.log("email in verify order Route");
@@ -557,6 +560,7 @@ exports.verifyOrder = async (req, res) => {
   const user = req.user;
   console.log(user);
   console.log(orderItems);
+  if (!preorderDate) preorderDate = null;
   console.log("preorder date");
   console.log(preorderDate);
   const generatedSignature = crypto
@@ -628,6 +632,7 @@ exports.verifyOrder = async (req, res) => {
         delivery,
         finalAmount: Number(totalAmount) + Number(delivery) + Number(gst),
       };
+
       console.log("bill data");
       console.log(billData);
       // Render the HTML using EJS with the passed data
