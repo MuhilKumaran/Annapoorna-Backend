@@ -547,6 +547,7 @@ exports.verifyOrder = async (req, res) => {
     gst,
     delivery,
     user_mobile,
+    preorderDate,
   } = req.body;
   console.log("body in verify order route");
   console.log(req.body);
@@ -556,7 +557,8 @@ exports.verifyOrder = async (req, res) => {
   const user = req.user;
   console.log(user);
   console.log(orderItems);
-
+  console.log("preorder date");
+  console.log(preorderDate);
   const generatedSignature = crypto
     .createHmac("sha256", process.env.RAZORPAY_KEY_SECRET)
     .update(`${razorpayOrderId}|${paymentId}`)
@@ -566,24 +568,14 @@ exports.verifyOrder = async (req, res) => {
     try {
       console.log("hash verified");
       console.log(user);
-      // const updateSQL =
-      //   "UPDATE customer_orders SET payment_status = ? WHERE transaction_id = ?";
-      // await new Promise((resolve, reject) => {
-      //   db.query(updateSQL, ["paid", orderId], (err, result) => {
-      //     if (err) {
-      //       return reject(err);
-      //     }
-      //     resolve(result);
-      //   });
-      // });
       const currentDate = new Date(Date.now())
         .toISOString()
         .slice(0, 19)
         .replace("T", " ");
       const sql = `
   INSERT INTO customer_orders
-  (transaction_id, name, mobile,address, order_items, total_price,user_mobile, created_at, payment_status, delivery_status)
-  VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?,?)`;
+  (transaction_id, name, mobile,address, order_items, total_price,user_mobile, created_at, preorder_date,payment_status, delivery_status)
+  VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`;
       const result = await new Promise((resolve, reject) => {
         db.query(
           sql,
@@ -596,6 +588,7 @@ exports.verifyOrder = async (req, res) => {
             finalTotalAmount,
             user_mobile,
             currentDate,
+            preorderDate,
             "paid",
             "processing", // Make sure this value matches the expected data type
           ],
@@ -688,7 +681,6 @@ exports.verifyOrder = async (req, res) => {
       res.status(500).json({ status: false, error: "Failed to process order" });
     }
   } else {
-    c;
     res.status(400).json({ status: false, error: "Invalid Payment signature" });
   }
 };
