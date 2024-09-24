@@ -616,6 +616,7 @@ exports.verifyOrder = async (req, res) => {
       const billData = {
         orderId: orderId,
         orderDate: new Date().toLocaleString(),
+        preorderDate,
         paymentMethod: "Online",
         customerName: userName,
         customerAddress: address,
