@@ -33,5 +33,9 @@ app.set("views", path.join(__dirname, "views"));
 app.use("/menus", menuRoutes);
 app.use("/customers", customerRoutes);
 app.use("/admin", adminRoutes);
+app.get('/temp.html', (req, res) => {
+    const htmlContent = "<p> Hello </p>";
+    res.send(htmlContent);
+});
 
 module.exports = app;
